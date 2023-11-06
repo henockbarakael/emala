@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\VerifyNumberController;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\UserInfo;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +74,23 @@ class RegisterController extends Controller
             'created_at'   => $todayDate,
             'updated_at'   => $todayDate,
         ]);
+
+        $user = User::where('phone_number',$telephone)->first();
+        $user_id = $user->id;
+
+        $userInfo = UserInfo::where('user_id',Auth::user()->id)->first();
+        $branche_id = $userInfo->branche_id;
+
+        $info = [
+            'user_id' => $user_id,
+            'branche_id' => $branche_id,
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'phone_number' => $user->phone_number,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        UserInfo::insert($info);
         Toastr::success('Compte créer avec succès :)','Succès');
         return redirect('login');
     }

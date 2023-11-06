@@ -4,12 +4,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cuba admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
-    <meta name="keywords" content="admin template, Cuba admin template, dashboard template, flat admin template, responsive admin template, web app">
-    <meta name="author" content="pixelstrap">
+    <meta name="description" content="Portefeuille numérique à la pointe de la technologie, Emala vous permet de faire des transactions financières sécurisées.">
+    <meta name="keywords" content="EMALA, Emala, emala, emalafintech, fintech">
+    <meta property="og:image" content="http://dashboard.emalafintech.net/assets/img/logo.png" />
+    <meta property="og:image:secure_url" content="https://dashboard.emalafintech.net/assets/img/logo.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="400" />
+    <meta property="og:image:height" content="300" />
+    <meta property="og:image:alt" content="Emala Fintech" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="author" content="Henock BARAKAEL | barahenock@gmail.com | +243828584688">
     <link rel="icon" href="{{ asset('assets/images/icon1.png')}}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('assets/images/icon1.png')}}" type="image/x-icon">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Emala Fintech') }}</title>
     <style>.myshadow{
       box-shadow: 0 10px 5px -1px rgba(0,0,0,.2),0 15px 18px 0 rgba(0,0,0,.14),0 1px 14px 0 rgba(0,0,0,.12)!important;
       border-radius: 8px;
@@ -60,6 +67,7 @@
         <script src="{{ asset('assets/js/script.js')}}"></script>
         <!-- login js-->
         <!-- Plugin used-->
+        @yield('script')
     </div>
  </body>
 </html>

@@ -45,14 +45,7 @@ class TransferController extends Controller
         $fees = $request->fees;
         $payment_method = "Emala Gateway";
         $initialize = new TransfertAPI;
-        $authorization = $initialize->cash_register_verify();
-        // $authorization['success'] = true;
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
-            return redirect()->back();
-        }
-        else {
+
             if ($snumber == $rnumber) {
                 Alert::error('Erreur', 'L\'expéditeur ne peut pas être le bénéficiaire!');
                 return redirect()->back();
@@ -69,7 +62,7 @@ class TransferController extends Controller
                     return redirect()->back();
                 }
             }
-        }
+        
 
     }
     public function create_emala_interne(){
@@ -108,78 +101,21 @@ class TransferController extends Controller
         $payment_method     = "Emala Gateway";
 
         $initialize = new TransfertAPI;
-        $authorization = $initialize->cash_register_verify();
 
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+        $response = $initialize->customer_internal_transfer($sender_phone,$sender_first,$sender_last,$receiver_phone,$receiver_first,$receiver_last,$compte,$amount,$fees,$currency,$payment_method);
+         
+        if ($response['success'] == true) {
+            Alert::success('Succès', $response['message']);
             return redirect()->back();
         }
-        else {
-            $response = $initialize->customer_internal_transfer($sender_phone,$sender_first,$sender_last,$receiver_phone,$receiver_first,$receiver_last,$compte,$amount,$fees,$currency,$payment_method);
-           // dd($response);
-            if ($response['success'] == true) {
-                Alert::success('Succès', $response['message']);
-                return redirect()->back();
-            }
-            elseif ($response['success'] == false) {
-                Alert::error('Erreur', $response['message']);
-                return redirect()->back();
-            }
+        elseif ($response['success'] == false) {
+            Alert::error('Erreur', $response['message']);
+            return redirect()->back();
         }
 
+
     }
-    // public function TransfertInterne(Request $request){
-    //     $request->validate([
-    //         'amount'   => 'required|string|max:255',
-    //         'fees'   => 'required|string|max:255',
-    //         'currency'   => 'required|string|max:255',
-    //         'remise'   => 'required|string|max:255',
-    //         'money'   => 'required|string|max:255',
-    //         'customer_number'   => 'required|string|max:255',
-    //         'compte_1'   => 'required|string|max:255',
-    //         // 'compte_2'   => 'required|string|max:255',
-    //     ]);
 
-    //     $phone= new VerifyNumberController;
-    //     // $snumber = $phone->verify_number($request->sender_number);
-    //     $customer_number = $phone->verify_number($request->customer_number);
-    //     $currency = $request->currency;
-    //     $amount = $request->amount;
-    //     $fees = $request->fees;
-    //     $money_received = $request->money;
-    //     $remise = $request->remise;
-    //     $compte_1 = $request->compte_1;
-    //     // $compte_2 = $request->compte_2;
-    //     $payment_method = "Emala Gateway";
-    //     $initialize = new TransfertAPI;
-    //     // $authorization = $initialize->cash_register_verify();
-    //     $authorization['success'] = true;
-     
-    //     if ($authorization['success'] == false) {
-    //         Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
-    //         return redirect()->back();
-    //     }
-    //     else {
-    //         // if ($compte_1 == $compte_2) {
-    //         //     Alert::error('Impossible', 'Les deux comptes sont identiques!');
-    //         //     return redirect()->back();
-    //         // }
-    //         // else {
-                
-    //             $response = $initialize->customer_internal_transfer($customer_number,$compte_1,$amount,$remise,$money_received,$fees,$currency,$payment_method);
-    //             if ($response['success'] == true) {
-    //                 Alert::success('Succès', $response['message']);
-    //                 return redirect()->back();
-    //             }
-    //             elseif ($response['success'] == false) {
-    //                 Alert::error('Erreur', $response['message']);
-    //                 return redirect()->back();
-    //             }
-    //         //}
-    //     }
-
-    // }
     public function EmalaStoreVirement(Request $request){
         $request->validate([
             'amount'   => 'required|string|max:255',
@@ -203,31 +139,24 @@ class TransferController extends Controller
         $remise = $request->remise;
 
         $initialize = new TransfertAPI;
-        $authorization = $initialize->cash_register_verify();
-        // $authorization['success'] = true;
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+        if ($sender_number == $receiver_number) {
+            Alert::error('Erreur', 'L\'expéditeur ne peut pas être le bénéficiaire!');
             return redirect()->back();
         }
         else {
-            if ($sender_number == $receiver_number) {
-                Alert::error('Erreur', 'L\'expéditeur ne peut pas être le bénéficiaire!');
+            
+            $response = $initialize->customer_virement($sender_number,$receiver_number,$compte,$amount,$remise,$money_received,$fees,$currency,$payment_method);
+            if ($response['success'] == true) {
+                Alert::success('Succès', $response['message']);
                 return redirect()->back();
             }
-            else {
-                
-                $response = $initialize->customer_virement($sender_number,$receiver_number,$compte,$amount,$remise,$money_received,$fees,$currency,$payment_method);
-                if ($response['success'] == true) {
-                    Alert::success('Succès', $response['message']);
-                    return redirect()->back();
-                }
-                elseif ($response['success'] == false) {
-                    Alert::error('Erreur', $response['message']);
-                    return redirect()->back();
-                }
+            elseif ($response['success'] == false) {
+                Alert::error('Erreur', $response['message']);
+                return redirect()->back();
             }
         }
+        
  
     }
     public function create_mobile(){

@@ -45,13 +45,7 @@ class MobileMoneyController extends Controller
             }
             return $randomString;
         }
-        $authorization = $initialize->cash_register_verify();
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
-            return redirect()->back();
-        }
-        else {
+
             if ($operator != $vendor) {
 
                 if ($operator == "mpesa") {
@@ -166,6 +160,6 @@ class MobileMoneyController extends Controller
                     }
                 }
             }
-        }
+        
     }
 }

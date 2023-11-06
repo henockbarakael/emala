@@ -105,21 +105,20 @@ class CustomerAccountAPI extends Controller
         else {
             #On vérifie l'existence du compte client
             $account = $getCustomer->verifyAccount($compte,$customer_id,$currency);
-           
+            
+           //dd($account);
             if ($account['success'] == true) {
                 $data = ['wallet_balance' => $balance - $total];
-                // dd($data);
-                
-                $update = DB::connection('mysql2')->table('wallets')->where('wallet_type', $compte)->where('wallet_currency', $currency)->where('customer_id', $customer_id)->update($data);
-                
-                $activityLog = [
-                    'fullname'   => Auth::user()->firstname." ".Auth::user()->lastname,
-                    'user_phone'   => Auth::user()->phone_number,
-                    'activity'   => "vient de debiter le client ".$customer_number,
-                    'updated_at'   => $todayDate,
-                ];
-                if ($update) {
-                    // dd('ok');
+                try {
+                    $activityLog = [
+                        'fullname'   => Auth::user()->firstname." ".Auth::user()->lastname,
+                        'user_phone'   => Auth::user()->phone_number,
+                        'activity'   => "vient de debiter le client ".$customer_number,
+                        'updated_at'   => $todayDate,
+                    ];
+                    DB::beginTransaction(); // Tell Laravel all the code beneath this is a transaction
+                    DB::connection('mysql2')->table('wallets')->where('wallet_type', $compte)->where('wallet_currency', $currency)->where('customer_id', $customer_id)->update($data);
+                    DB::commit(); // Tell Laravel this transacion's all good and it can persist to DB
                     $this->activity_log($activityLog);
                     $response = [
                         'success' => true,
@@ -128,9 +127,8 @@ class CustomerAccountAPI extends Controller
                     ];
                     
                     return $response;
-                }
-                else {
-                    // dd('no');
+                } 
+                catch(\Exception $exp) {
                     $activityFailed= [
                         'fullname'   => Auth::user()->firstname." ".Auth::user()->lastname,
                         'user_phone'   => Auth::user()->phone_number,
@@ -138,12 +136,12 @@ class CustomerAccountAPI extends Controller
                         'updated_at'   => $todayDate,
                     ];
                     $this->activity_log($activityFailed);
-                    $response = [
-                        'success' => false,
-                        'message' => "Une erreur est survenue lors du debit du compte",
-                        'status' => "Failed",
-                    ];
-                    return $response;
+                    DB::rollBack(); // Tell Laravel, "It's not you, it's me. Please don't persist to DB"
+                    return response([
+                        'success' => true,
+                        'message' => $exp->getMessage(),
+                        'status' => 'failed'
+                    ]);
                 }
 
             }

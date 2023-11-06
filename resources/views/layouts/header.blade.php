@@ -17,13 +17,12 @@
       </div>
       <div class="left-header col horizontal-wrapper ps-0">
         <ul class="horizontal-menu">
-            @if (Auth::user()->role_name == "Admin")
-               
-            <li class="level-menu outside"><button class="nav-link btn btn-air-primary" id="btn_ajax" onclick="ajaxReq()"><i data-feather="lock"></i><span>Gestion de caisse</span></button></li>
+            {{-- @if (Auth::user()->role_name == "Admin") --}}
+            {{-- <li class="level-menu outside"><a class="nav-link btn btn-air-primary" id="btn_ajax" href="{{route('admin.cloture_caisse')}}"><i data-feather="lock"></i><span>Clôture de caisse</span></a></li>
             @elseif (Auth::user()->role_name == "Manager")
-            <li class="level-menu outside"><button class="nav-link btn btn-air-primary" id="btn_ajax" onclick="ajaxReq()"><i data-feather="lock"></i><span>Gestion de caisse</span></button></li>
-            @elseif (Auth::user()->role_name == "Cashier")
-            <li class="level-menu outside"><button class="nav-link btn btn-air-primary" id="btn_ajax" onclick="ajaxReq()"><i data-feather="lock"></i><span>Gestion de caisse</span></button></li> 
+            <li class="level-menu outside"><a class="nav-link btn btn-air-primary" id="btn_ajax" href="{{route('manager.cloture_caisse')}}"><i data-feather="lock"></i><span>Clôture de caisse</span></a></li> --}}
+            @if (Auth::user()->role_name == "Cashier")
+            <li class="level-menu outside"><a class="nav-link btn btn-air-primary" id="btn_ajax" href="{{route('cashier.cloture_caisse')}}"><i data-feather="lock"></i><span>Clôture de caisse</span></a></li> 
             @endif
         </ul>
       </div>
@@ -51,14 +50,22 @@
               </div>
             </div>
             <ul class="profile-dropdown onhover-show-div">
-              @if (Auth::user()->role_name == "Manager")
+              {{-- @if (Auth::user()->role_name == "Manager")
               <li><a href="{{route('manager.account.profil.user')}}"><i data-feather="user"></i><span>Mon Compte </span></a></li>
               @elseif (Auth::user()->role_name == "Cashier")
               <li><a href="{{route('cashier.account.profil.user')}}"><i data-feather="user"></i><span>Mon Compte </span></a></li>
               @elseif (Auth::user()->role_name == "Admin")
               <li><a href="{{route('admin.account.profil.user')}}"><i data-feather="user"></i><span>Mon Compte </span></a></li>
-              @endif
-              <li><a href="{{route('logout')}}"><i data-feather="log-in"> </i><span>Se Deconnecter</span></a></li>
+              @endif --}}
+              <li>
+                <form id="logoutForm" action="{{ route('logout') }}" method="POST" style="display: none;">
+                  @csrf <!-- Ajoutez cette ligne pour inclure le jeton CSRF -->
+                </form>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                  <i data-feather="log-in"></i>
+                  <span>Déconnexion</span>
+                </a>
+              </li>
             </ul>
           </li>
         </ul>

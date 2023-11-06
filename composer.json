@@ -7,7 +7,9 @@
     "require": {
         "php": "^7.3|^8.0",
         "barryvdh/laravel-dompdf": "^0.9.0",
+        "beyondcode/laravel-masked-db-dump": "^2.1",
         "brian2694/laravel-toastr": "^5.57",
+        "doctrine/dbal": "^3.7",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -15,7 +17,8 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.3",
         "laraveldaily/laravel-invoices": "^2.2",
-        "realrashid/sweet-alert": "^5.1"
+        "realrashid/sweet-alert": "^5.1",
+        "spatie/db-dumper": "^3.4"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

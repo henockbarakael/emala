@@ -90,9 +90,11 @@ class WithdrawalAPI extends Controller
         $total = ($fees + $amount);
 
         $debitCaissier = $getUserAccount->debit_user($currency, $amount);
+        
         $impact = "caisse";
         if ($debitCaissier['success'] == true) {
             $debit = $getCustomerAccount->debit_customer($currency, $amount, $fees, $compte, $customer_number);
+        
             $gateway = $this->getPaymentMethodID($payment_method);
             if ($debit['success'] == true) {
                 $customer_id = $getCustomer->getCustomerID($customer_number);
@@ -119,7 +121,7 @@ class WithdrawalAPI extends Controller
             else {
                 $response = [
                     'success' => false,
-                    'message' => "Pour une raison inconnue, l'argent n'a pas pu être retiré de votre wallet !",
+                    'message' => $debit['message'],
                     'status' => "Failed",
                 ];
                 return $response;

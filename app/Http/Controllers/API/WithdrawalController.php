@@ -36,30 +36,23 @@ class WithdrawalController extends Controller
         $initialize = new Initialize;
         $verifyCustomer = $initialize->verifyCustomer($customer_number);
         
-        $authorization = $initialize->cash_register_verify();
-        // $authorization['success'] = true;
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+        if ($verifyCustomer['success'] == false) {
+            Alert::error('Erreur!', 'Ce numéro n\'est pas enreistré dans le système!');
             return redirect()->back();
         }
         else {
-            if ($verifyCustomer['success'] == false) {
-                Alert::error('Erreur!', 'Ce numéro n\'est pas enreistré dans le système!');
+            $response = $withdrawal->customer_withdrawal($customer_number,$amount,$fees,$currency,$compte,$payment_method);
+            if ($response['success'] == true) {
+                Alert::success('Succès', $response['message']);
                 return redirect()->back();
             }
-            else {
-                $response = $withdrawal->customer_withdrawal($customer_number,$amount,$fees,$currency,$compte,$payment_method);
-                if ($response['success'] == true) {
-                    Alert::success('Succès', $response['message']);
-                    return redirect()->back();
-                }
-                elseif ($response['success'] == false) {
-                    Alert::error('Erreur', $response['message']);
-                    return redirect()->back();
-                }
+            elseif ($response['success'] == false) {
+                Alert::error('Erreur', $response['message']);
+                return redirect()->back();
             }
         }
+        
         
     }
     public function retrait_compte_epargne(Request $request){
@@ -82,30 +75,24 @@ class WithdrawalController extends Controller
         $initialize = new Initialize;
         $verifyCustomer = $initialize->verifyCustomer($customer_number);
         
-        $authorization = $initialize->cash_register_verify();
-        // $authorization['success'] = true;
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+
+        if ($verifyCustomer['success'] == false) {
+            Alert::error('Erreur!', 'Ce numéro n\'est pas enreistré dans le système!');
             return redirect()->back();
         }
         else {
-            if ($verifyCustomer['success'] == false) {
-                Alert::error('Erreur!', 'Ce numéro n\'est pas enreistré dans le système!');
+            $response = $withdrawal->customer_withdrawal($customer_number,$amount,$fees,$currency,$compte,$payment_method);
+            if ($response['success'] == true) {
+                Alert::success('Succès', $response['message']);
                 return redirect()->back();
             }
-            else {
-                $response = $withdrawal->customer_withdrawal($customer_number,$amount,$fees,$currency,$compte,$payment_method);
-                if ($response['success'] == true) {
-                    Alert::success('Succès', $response['message']);
-                    return redirect()->back();
-                }
-                elseif ($response['success'] == false) {
-                    Alert::error('Erreur', $response['message']);
-                    return redirect()->back();
-                }
+            elseif ($response['success'] == false) {
+                Alert::error('Erreur', $response['message']);
+                return redirect()->back();
             }
         }
+        
         
     }
     public function transfert_cash_store(Request $request){
@@ -124,37 +111,29 @@ class WithdrawalController extends Controller
             $payment_method     = "Emala Gateway";
     
             $withdrawal = new WithdrawalAPI;
-            $initialize = new Initialize;
-            $authorization = $initialize->cash_register_verify();
-            // $authorization['success'] = true;
-         
-            if ($authorization['success'] == false) {
-                Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+            $sender_number = $verify['sender_number'];
+            $senderFirstname = $verify['senderFirstname'];
+            $senderLastname = $verify['senderLastname'];
+            $receiver_number = $verify['receiver_number'];
+            $receiverFirstname = $verify['receiverFirstname'];
+            $receiverLastname = $verify['receiverLastname'];
+            $reference = $verify['reference'];
+            $amount = $verify['amount'];
+            $currency = $verify['currency'];
+            $fees = $verify['fees'];
+            $remise = $verify['remise'];
+            $money_received = $verify['money_received'];
+            $response = $withdrawal->customer_withdrawal2($sender_number,$senderFirstname,$senderLastname,$receiver_number,$receiverFirstname,$receiverLastname,$amount,$remise,$money_received,$fees,$currency,$compte,$payment_method,$reference);
+            if ($response['success'] == true) {
+                Alert::success('Succès', $response['message']);
                 return redirect()->back();
             }
-            else {
-                $sender_number = $verify['sender_number'];
-                $senderFirstname = $verify['senderFirstname'];
-                $senderLastname = $verify['senderLastname'];
-                $receiver_number = $verify['receiver_number'];
-                $receiverFirstname = $verify['receiverFirstname'];
-                $receiverLastname = $verify['receiverLastname'];
-                $reference = $verify['reference'];
-                $amount = $verify['amount'];
-                $currency = $verify['currency'];
-                $fees = $verify['fees'];
-                $remise = $verify['remise'];
-                $money_received = $verify['money_received'];
-                $response = $withdrawal->customer_withdrawal2($sender_number,$senderFirstname,$senderLastname,$receiver_number,$receiverFirstname,$receiverLastname,$amount,$remise,$money_received,$fees,$currency,$compte,$payment_method,$reference);
-                if ($response['success'] == true) {
-                    Alert::success('Succès', $response['message']);
-                    return redirect()->back();
-                }
-                elseif ($response['success'] == false) {
-                    Alert::error('Erreur', $response['message']);
-                    return redirect()->back();
-                }
+            elseif ($response['success'] == false) {
+                Alert::error('Erreur', $response['message']);
+                return redirect()->back();
             }
+            
         }
         else {
             Alert::error('Erreur!', $verify['message']);

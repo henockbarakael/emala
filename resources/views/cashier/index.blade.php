@@ -23,6 +23,7 @@
       </div>
     </div>
     <!-- Container-fluid starts-->
+
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-12 col-xl-12">
@@ -143,6 +144,13 @@
     <!-- Container-fluid Ends-->
   </div>
   @section('script')
+<!-- Script pour afficher le modal -->
+<script>
+  $(document).ready(function() {
+
+      $('#modalOuvertureCaisse').modal('show');
+  });
+</script>
     @if (count($errors) > 0)
     <script type="text/javascript">
         // $('#open_cash_register').modal('show');

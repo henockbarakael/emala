@@ -15,8 +15,8 @@
             @elseif (Auth::check() && Auth::user()->role_name == "Caissier")
                 <li class="breadcrumb-item"><a href="{{route('caissier.dashboard')}}"><i data-feather="home"></i></a></li>
             @endif
-            <li class="breadcrumb-item">Pages</li>
-            <li class="breadcrumb-item active" style="text-transform: none">@yield('page')</li>
+            <li class="breadcrumb-item">@yield('page_1')</li>
+            <li class="breadcrumb-item active" style="text-transform: none">@yield('page_2')</li>
           </ol>
         </div>
       </div>

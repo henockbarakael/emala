@@ -56,7 +56,7 @@
                     {{-- <td class="balance_usd text-center">{{$value->payment_method}}</td> --}}
                     {{-- <td class="level text-center">{{$value->btownship}}</td> --}}
                     <td class="level text-center">
-                        <a href="#" class="btn btn-secondary btn-xs approuver" title="Approuver" data-bs-toggle="modal" data-original-title="test" data-bs-target="#approuver">Approuver</a>
+                        <a href="#" class="btn btn-secondary btn-xs Approuvé" title="Approuvé" data-bs-toggle="modal" data-original-title="test" data-bs-target="#Approuvé">Approuvé</a>
                     </td>
                   </tr>
                 @endforeach
@@ -135,7 +135,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="approuver" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" id="Approuvé" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-body">
@@ -171,7 +171,7 @@
     </script>
     {{-- delete js --}}
     <script>
-        $(document).on('click','.approuver',function()
+        $(document).on('click','.Approuvé',function()
         {
             var _this = $(this).parents('tr');
             $('.e_id').val(_this.find('.ids').text());

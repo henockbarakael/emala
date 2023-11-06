@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\API\Initialize;
-use App\Http\Controllers\API\Statistiques;
-use App\Models\bank_account;
-use App\Models\branch;
-use App\Models\etirroir;
-use App\Models\ewallet;
-use App\Models\tirroir_account;
-use App\Models\Transaction;
+use App\Models\Admin;
+use App\Models\BrancheWallet;
+use App\Models\Cashier;
+use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use PDF;
-use App\Models\User;
+use App\Models\UserInfo;
+use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -24,283 +21,190 @@ class HomeController extends Controller
         $todayDate = Carbon::now()->format('Y-m-d H:i:s');
         return $todayDate;
     }
+    
     public function admin(){
-        $todayDate = $this->todayDate();
-        $date = Carbon::now();
-        $today = $date->format('d-m-Y');
-   
-        $day = Transaction::select(DB::raw('DATE_FORMAT(created_at, "%d") as date'))
-                ->groupBy(DB::raw('DATE_FORMAT(created_at, "%d")'))
-                ->pluck('date');
-        $depotcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'depot','currency_id'=>1])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
 
-        $retraitcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'retrait','currency_id'=>1])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        $currentDate = Carbon::now()->toDateString();
 
-        $transfertcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'transfert','currency_id'=>1])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        $user = new User();
+        $adminId = $user->getAdminId();
+        // Obtenez l'objet Admin correspondant à l'ID de l'admin
+        $admin = Admin::find($adminId);
 
-        $depotusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'depot','currency_id'=>2])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        // Obtenez les soldes des caissiers des agences filiales pour CDF et USD
+        $cdfBranchesBalances = $admin->getCdfBranchesBalances();
+        $usdBranchesBalances = $admin->getUsdBranchesBalances();
 
-        $retraitusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'retrait','currency_id'=>2])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        // Obtenez les soldes des agences filiales pour CDF et USD
+        $sommeSoldesCDF = Wallet::whereIn('agency_id', $admin->agencesFiliales()->pluck('id'))
+        ->where('currency', 'CDF')
+        ->sum('balance');
+    
+        $sommeSoldesUSD = Wallet::whereIn('agency_id', $admin->agencesFiliales()->pluck('id'))
+        ->where('currency', 'USD')
+        ->sum('balance');
 
-        $transfertusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'transfert','currency_id'=>2])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        $soldeGlobalCDF = $cdfBranchesBalances + $sommeSoldesCDF;
+        $soldeGlobalUSD = $usdBranchesBalances + $sommeSoldesUSD;
 
-        $depot_count = Transaction::where(['type'=>'depot'])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $retrait_count = Transaction::where(['type'=>'retrait'])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $transfert_count = Transaction::where(['type'=>'transfert'])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $transaction_count = Transaction::whereDate('created_at', Carbon::today()->toDateString())->count();
-
-        $total_count = $depot_count + $retrait_count + $transfert_count;
-
-        if ($total_count == 0) {
-            $percent_depot_count = number_format(0,2);
-            $percent_retrait_count = number_format(0,2);
-            $percent_transfert_count = number_format(0,2);
-        }
-        else {
-            $percent_depot_count = number_format(($depot_count * 100) / ($total_count),2);
-            $percent_retrait_count = number_format(($retrait_count * 100) / ($total_count),2);
-            $percent_transfert_count = number_format(($transfert_count * 100) / ($total_count),2);
-        }
+        $userInfo = UserInfo::where('user_id',Auth::user()->id)->first();
         
-        $initialize = new Statistiques;
-        $total_agence = $initialize->total_agence();
-        $total_user = $initialize->total_user();
-        $total_client = $initialize->total_client();
-        $total_transaction = $initialize->total_transaction();
-        $total_depot = $initialize->total_depot();
-        $depot_cdf = $total_depot['depot_cdf'];
-        $depot_usd = $total_depot['depot_usd'];
-        $total_retrait = $initialize->total_retrait();
-        $retrait_cdf = $total_retrait['retrait_cdf'];
-        $retrait_usd = $total_retrait['retrait_usd'];
-        $total_transfert = $initialize->total_transfert();
-        $transfert_cdf = $total_transfert['transfert_cdf'];
-        $transfert_usd = $total_transfert['transfert_usd'];
-        $total_revenu = $initialize->revenu_global();
-        $revenu_cdf = $total_revenu['revenu_cdf'];
-        $revenu_usd = $total_revenu['revenu_usd'];
-        $balance_agence = $initialize->balance_agence();
-        $agence_cdf = $balance_agence['solde_cdf'];
-        $agence_usd = $balance_agence['solde_usd'];
-        $balance_wallet = $initialize->balance_wallet();
-        $wallet_cdf = $balance_wallet['wallet_cdf'];
-        $wallet_usd = $balance_wallet['wallet_usd'];
-        return view('admin.index', compact('total_agence','total_user',
-        'total_client','total_transaction','depot_cdf','depot_usd',
-        'retrait_cdf','retrait_usd','revenu_cdf','revenu_usd',
-        'agence_cdf','agence_usd','wallet_cdf','wallet_usd','day','depotcdf','retraitcdf','transfertcdf','depotusd','retraitusd','transfertusd',
-        'percent_depot_count','percent_retrait_count','percent_transfert_count', 'today'
-    ));
-    }
-    public function manager(){
-        /*
-        $hour = Transaction::select(DB::raw("Hour(created_at) as hour"))
-                ->whereDate('created_at', Carbon::yesterday()->toDateString())
-                ->groupBy(DB::raw("Hour(created_at)"))
-                ->pluck('hour');
-        $depot = Transaction::select(DB::raw("SUM(amount) as count"))
-                ->whereDate('created_at', Carbon::yesterday()->toDateString())
-                ->where('type', 'depot')
-                ->groupBy(DB::raw("Hour(created_at)"))
-                ->pluck('count');
+        $balances = Wallet::select(
+            DB::raw("SUM(CASE WHEN currency = 'CDF' THEN balance END) AS balance_cdf"),
+            DB::raw("SUM(CASE WHEN currency = 'USD' THEN balance END) AS balance_usd")
+        )
+        ->where('agency_id','1')
+        ->get();
 
-        $retrait = Transaction::select(DB::raw("SUM(amount) as count"))
-                ->whereDate('created_at', Carbon::yesterday()->toDateString())
-                ->where('type', 'retrait')
-                ->groupBy(DB::raw("Hour(created_at)"))
-                ->pluck('count');
-        */
-        $todayDate = $this->todayDate();
-        $date = Carbon::now();
-        $today = $date->format('d-m-Y');
-
-        $initialize = new Initialize;
-        $branche_id = $initialize->branche_id(Auth::user()->id);
+        $balanceCDF = $balances->first()->balance_cdf;
+        $balanceUSD = $balances->first()->balance_usd;
    
-        $day = Transaction::select(DB::raw('DATE_FORMAT(created_at, "%d") as date'),'branche_id')
-        ->where(['branche_id'=>$branche_id])
-                ->groupBy(DB::raw('DATE_FORMAT(created_at, "%d")'),'branche_id')
-                ->pluck('date');
-        $depotcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'depot','currency_id'=>1,'branche_id'=>$branche_id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        $transactions = DB::table('transactions')
+        ->whereDate('created_at', $currentDate)
+            ->selectRaw('count(*) as total')
+            ->selectRaw("count(case when category = 'Retrait' then 1 end) as retrait")
+            ->selectRaw("count(case when category = 'Dépôt' then 1 end) as depot")
+            ->selectRaw("count(case when category = 'Transfert' then 1 end) as transfert")
+            ->first();
 
-        $retraitcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'retrait','currency_id'=>1,'branche_id'=>$branche_id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+           
 
-        $transfertcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'transfert','currency_id'=>1,'branche_id'=>$branche_id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        $retrait_cdf= DB::table("transactions")->whereDate('created_at', $currentDate)->where(['currency'=>'CDF','category'=>'Retrait'])->sum('amount');
+        $retrait_usd= DB::table("transactions")->whereDate('created_at', $currentDate)->where(['currency'=>'USD','category'=>'Retrait'])->sum('amount');
+        $depot_cdf= DB::table("transactions")->whereDate('created_at', $currentDate)->where(['currency'=>'CDF','category'=>'Dépôt'])->sum('amount');
+        $depot_usd= DB::table("transactions")->whereDate('created_at', $currentDate)->where(['currency'=>'USD','category'=>'Dépôt'])->sum('amount');
+        $transfert_cdf= DB::table("transactions")->whereDate('created_at', $currentDate)->where(['currency'=>'CDF','category'=>'Transfert'])->sum('amount');
+        $transfert_usd= DB::table("transactions")->whereDate('created_at', $currentDate)->where(['currency'=>'USD','category'=>'Transfert'])->sum('amount');
+      
+        $customers = Customer::count();
 
-        $depotusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'depot','currency_id'=>2,'branche_id'=>$branche_id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        return view('backend.dashboard.admin',
+        compact(
+            'transactions','customers','retrait_cdf','retrait_usd',
+            'depot_cdf','depot_usd','cdfBranchesBalances','usdBranchesBalances',
+            'transfert_cdf','transfert_usd','balanceCDF','balanceUSD','soldeGlobalCDF','soldeGlobalUSD'));
+    }
 
-        $retraitusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'retrait','currency_id'=>2,'branche_id'=>$branche_id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+    public function manager(){
+        $currentDate = Carbon::now()->toDateString();
 
-        $transfertusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'transfert','currency_id'=>2,'branche_id'=>$branche_id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        $userInfo = UserInfo::where('user_id',Auth::user()->id)->first();
+        
+        $balances = Wallet::select(
+            DB::raw("SUM(CASE WHEN currency = 'CDF' THEN balance END) AS balance_cdf"),
+            DB::raw("SUM(CASE WHEN currency = 'USD' THEN balance END) AS balance_usd")
+        )->where('agency_id',$userInfo->agency_id)
+        ->get();
 
-        $depot_count = Transaction::where(['type'=>'depot','branche_id'=>$branche_id])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $retrait_count = Transaction::where(['type'=>'retrait','branche_id'=>$branche_id])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $transfert_count = Transaction::where(['type'=>'transfert','branche_id'=>$branche_id])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $transaction_count = Transaction::whereDate('created_at', Carbon::today()->toDateString())->where(['branche_id'=>$branche_id])->count();
+        $cashierBalances = Cashier::select(
+            DB::raw("SUM(CASE WHEN currency = 'CDF' THEN balance END) AS balance_cdf"),
+            DB::raw("SUM(CASE WHEN currency = 'USD' THEN balance END) AS balance_usd")
+        )->where('agency_id',$userInfo->agency_id)
+        ->get();
 
-        $total_count = $depot_count + $retrait_count + $transfert_count;
-        if ($total_count == 0) {
-            $percent_depot_count = number_format(0,2);
-            $percent_retrait_count = number_format(0,2);
-            $percent_transfert_count = number_format(0,2);
-        }
-        else {
-            $percent_depot_count = number_format(($depot_count * 100) / ($total_count),2);
-            $percent_retrait_count = number_format(($retrait_count * 100) / ($total_count),2);
-            $percent_transfert_count = number_format(($transfert_count * 100) / ($total_count),2);
-        }
+        $balanceCDF = $balances->first()->balance_cdf;
+        $balanceUSD = $balances->first()->balance_usd;
 
-        $initialize = new Statistiques;
-        $total_agence = $initialize->total_agence();
-        $total_user = $initialize->total_user();
-        $total_client = $initialize->total_client();
-        $total_transaction = $initialize->total_transaction();
-        $total_depot = $initialize->total_depot();
-        $depot_cdf = $total_depot['depot_cdf'];
-        $depot_usd = $total_depot['depot_usd'];
-        $total_retrait = $initialize->total_retrait();
-        $retrait_cdf = $total_retrait['retrait_cdf'];
-        $retrait_usd = $total_retrait['retrait_usd'];
-        $total_transfert = $initialize->total_transfert();
-        $transfert_cdf = $total_transfert['transfert_cdf'];
-        $transfert_usd = $total_transfert['transfert_usd'];
-        $total_revenu = $initialize->total_revenu();
-        $revenu_cdf = $total_revenu['revenu_cdf'];
-        $revenu_usd = $total_revenu['revenu_usd'];
-        $balance_agence = $initialize->balance_agence();
-        $agence_cdf = $balance_agence['solde_cdf'];
-        $agence_usd = $balance_agence['solde_usd'];
-        $balance_wallet = $initialize->balance_wallet();
-        $wallet_cdf = $balance_wallet['wallet_cdf'];
-        $wallet_usd = $balance_wallet['wallet_usd'];
-        return view('manager.index', compact('total_agence','total_user',
-        'total_client','total_transaction','depot_cdf','depot_usd','transaction_count',
-        'retrait_cdf','retrait_usd','revenu_cdf','revenu_usd',
-        'agence_cdf','agence_usd','wallet_cdf','wallet_usd',
-        'day','depotcdf','retraitcdf','transfertcdf','depotusd','retraitusd','transfertusd',
-        'percent_depot_count','percent_retrait_count','percent_transfert_count', 'today'
-    ));
+        $cashierCDF = $cashierBalances->first()->balance_cdf;
+        $cashierUSD = $cashierBalances->first()->balance_usd;
+   
+        $transactions = DB::table('transactions')
+        ->whereDate('created_at', $currentDate)
+        ->where('agence_id',$userInfo->agency_id)
+            ->selectRaw('count(*) as total')
+            ->selectRaw("count(case when category = 'Retrait' then 1 end) as retrait")
+            ->selectRaw("count(case when category = 'Dépôt' then 1 end) as depot")
+            ->selectRaw("count(case when category = 'Transfert' then 1 end) as transfert")
+            ->first();
+
+        $retrait_cdf= DB::table("transactions")->where('agence_id',$userInfo->agency_id)->whereDate('created_at', $currentDate)->where(['currency'=>'CDF','category'=>'Retrait'])->sum('amount');
+        $retrait_usd= DB::table("transactions")->where('agence_id',$userInfo->agency_id)->whereDate('created_at', $currentDate)->where(['currency'=>'USD','category'=>'Retrait'])->sum('amount');
+        $depot_cdf= DB::table("transactions")->where('agence_id',$userInfo->agency_id)->whereDate('created_at', $currentDate)->where(['currency'=>'CDF','category'=>'Dépôt'])->sum('amount');
+        $depot_usd= DB::table("transactions")->where('agence_id',$userInfo->agency_id)->whereDate('created_at', $currentDate)->where(['currency'=>'USD','category'=>'Dépôt'])->sum('amount');
+        $transfert_cdf= DB::table("transactions")->where('agence_id',$userInfo->agency_id)->whereDate('created_at', $currentDate)->where(['currency'=>'CDF','category'=>'Transfert'])->sum('amount');
+        $transfert_usd= DB::table("transactions")->where('agence_id',$userInfo->agency_id)->whereDate('created_at', $currentDate)->where(['currency'=>'USD','category'=>'Transfert'])->sum('amount');
+      
+        $customers = Customer::count();
+
+        return view('backend.dashboard.manager',compact('transactions','customers','retrait_cdf','retrait_usd','depot_cdf','depot_usd','transfert_cdf','transfert_usd','balanceCDF','balanceUSD'));
+
     }
 
     public function cashier(){
-        $todayDate = $this->todayDate();
-        $date = Carbon::now();
-        $today = $date->format('d-m-Y');
+        $currentDate = Carbon::now()->toDateString();
+
+        $userInfo = UserInfo::where('user_id',Auth::user()->id)->first();
+
+        $cashier = Cashier::where('user_id',Auth::user()->id)->get();
+
+        
+        $cashier_2 = Cashier::where('user_id', Auth::user()->id)->first();
+
+        $transactions = $cashier_2->transactions()
+            ->whereDate('created_at', $currentDate)
+            ->selectRaw('count(*) as total')
+            ->selectRaw("coalesce(sum(case when category = 'Retrait' then 1 end), 0) as retrait")
+            ->selectRaw("coalesce(sum(case when category = 'Dépôt' then 1 end), 0) as depot")
+            ->selectRaw("coalesce(sum(case when category = 'Transfert' then 1 end), 0) as transfert")
+            ->first();
+
+
+
+        $cashierBalances = Cashier::select(
+            DB::raw("SUM(CASE WHEN currency = 'CDF' THEN balance END) AS balance_cdf"),
+            DB::raw("SUM(CASE WHEN currency = 'USD' THEN balance END) AS balance_usd")
+            )->where('user_id',Auth::user()->id)
+            ->get();
+
+        $cashierCDF = $cashierBalances->first()->balance_cdf;
+        $cashierUSD = $cashierBalances->first()->balance_usd;
    
-        $day = Transaction::select(DB::raw('DATE_FORMAT(created_at, "%d-%m") as date'),'user_id')
-                ->where(['user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw('DATE_FORMAT(created_at, "%d-%m")'),'user_id')
-                ->pluck('date');
-        $depotcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'depot','currency_id'=>1,'user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+    
 
-        $retraitcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'retrait','currency_id'=>1,'user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+            $retrait_cdf = $cashier->flatMap(function ($caissier) use ($currentDate) {
+                return $caissier->transactions()
+                    ->whereDate('created_at', $currentDate)
+                    ->where(['currency' => 'CDF', 'category' => 'Retrait'])
+                    ->pluck('amount');
+            })->sum();
+            
+            $retrait_usd = $cashier->flatMap(function ($caissier) use ($currentDate) {
+                return $caissier->transactions()
+                    ->whereDate('created_at', $currentDate)
+                    ->where(['currency' => 'USD', 'category' => 'Retrait'])
+                    ->pluck('amount');
+            })->sum();
+            
+            $depot_cdf = $cashier->flatMap(function ($caissier) use ($currentDate) {
+                return $caissier->transactions()
+                    ->whereDate('created_at', $currentDate)
+                    ->where(['currency' => 'CDF', 'category' => 'Dépôt'])
+                    ->pluck('amount');
+            })->sum();
+            
+            $depot_usd = $cashier->flatMap(function ($caissier) use ($currentDate) {
+                return $caissier->transactions()
+                    ->whereDate('created_at', $currentDate)
+                    ->where(['currency' => 'USD', 'category' => 'Dépôt'])
+                    ->pluck('amount');
+            })->sum();
+            
+            $transfert_cdf = $cashier->flatMap(function ($caissier) use ($currentDate) {
+                return $caissier->transactions()
+                    ->whereDate('created_at', $currentDate)
+                    ->where(['currency' => 'CDF', 'category' => 'Transfert'])
+                    ->pluck('amount');
+            })->sum();
+            
+            $transfert_usd = $cashier->flatMap(function ($caissier) use ($currentDate) {
+                return $caissier->transactions()
+                    ->whereDate('created_at', $currentDate)
+                    ->where(['currency' => 'USD', 'category' => 'Transfert'])
+                    ->pluck('amount');
+            })->sum();
+     
 
-        $transfertcdf = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'transfert','currency_id'=>1,'user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
+        return view('backend.dashboard.cashier',compact('transactions','retrait_cdf','retrait_usd','depot_cdf','depot_usd','transfert_cdf','transfert_usd','cashierCDF','cashierUSD'));
 
-        $depotusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'depot','currency_id'=>2,'user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
-
-        $retraitusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'retrait','currency_id'=>2,'user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
-
-        $transfertusd = Transaction::select(DB::raw("SUM(amount) as amount"))
-                ->where(['type'=>'transfert','currency_id'=>2,'user_id'=>Auth::user()->id])
-                ->groupBy(DB::raw("Date(created_at)"))
-                ->pluck('amount');
-
-        $depot_count = Transaction::where(['type'=>'depot','user_id'=>Auth::user()->id])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $retrait_count = Transaction::where(['type'=>'retrait','user_id'=>Auth::user()->id])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $transfert_count = Transaction::where(['type'=>'transfert','user_id'=>Auth::user()->id])->whereDate('created_at', Carbon::today()->toDateString())->count();
-        $transaction_count = Transaction::whereDate('created_at', Carbon::today()->toDateString())->where(['user_id'=>Auth::user()->id])->count();
-
-        $total_count = $depot_count + $retrait_count + $transfert_count;
-        if ($total_count == 0) {
-            $percent_depot_count = number_format(0,2);
-            $percent_retrait_count = number_format(0,2);
-            $percent_transfert_count = number_format(0,2);
-        }
-        else {
-            $percent_depot_count = number_format(($depot_count * 100) / ($total_count),2);
-            $percent_retrait_count = number_format(($retrait_count * 100) / ($total_count),2);
-            $percent_transfert_count = number_format(($transfert_count * 100) / ($total_count),2);
-        }
-        $initialize = new Statistiques;
-        $total_agence = $initialize->total_agence();
-        $total_user = $initialize->total_user();
-        $total_client = $initialize->total_client();
-        $total_transaction = $initialize->total_transaction();
-        $total_depot = $initialize->total_depot();
-        $depot_cdf = $total_depot['depot_cdf'];
-        $depot_usd = $total_depot['depot_usd'];
-        $total_retrait = $initialize->total_retrait();
-        $retrait_cdf = $total_retrait['retrait_cdf'];
-        $retrait_usd = $total_retrait['retrait_usd'];
-        $total_transfert = $initialize->total_transfert();
-        $transfert_cdf = $total_transfert['transfert_cdf'];
-        $transfert_usd = $total_transfert['transfert_usd'];
-        $total_revenu = $initialize->total_revenu();
-        $revenu_cdf = $total_revenu['revenu_cdf'];
-        $revenu_usd = $total_revenu['revenu_usd'];
-        $balance_agence = $initialize->getCashierBalance();
-        $agence_cdf = $balance_agence['solde_cdf'];
-        $agence_usd = $balance_agence['solde_usd'];
-        $balance_wallet = $initialize->balance_wallet();
-        $wallet_cdf = $balance_wallet['wallet_cdf'];
-        $wallet_usd = $balance_wallet['wallet_usd'];
-        return view('cashier.index', compact('total_agence','total_user',
-        'total_client','total_transaction','depot_cdf','depot_usd','transaction_count',
-        'retrait_cdf','retrait_usd','revenu_cdf','revenu_usd','transfert_cdf','transfert_usd',
-        'agence_cdf','agence_usd','wallet_cdf','wallet_usd','day','depotcdf','retraitcdf','transfertcdf','depotusd','retraitusd','transfertusd',
-        'percent_depot_count','percent_retrait_count','percent_transfert_count', 'today'
-    ));
     }
 }

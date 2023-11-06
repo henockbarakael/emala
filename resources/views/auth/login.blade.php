@@ -5,9 +5,9 @@
     <div class="col-12 p-0">    
       <div class="login-card ">
         <div>
-          <div><a class="logo" href="index.html"><img class="img-fluid for-light" src="{{ asset('assets/images/logo/logo.png')}}" alt="looginpage"><img class="img-fluid for-dark" src="{{ asset('assets/images/logo/logo-header.png')}}" alt="looginpage"></a></div>
+          <div><a class="logo" href="{{route('login')}}"><img class="img-fluid for-light" src="{{ asset('assets/images/logo/logo.png')}}" alt="looginpage"><img class="img-fluid for-dark" src="{{ asset('assets/images/logo/logo-header.png')}}" alt="looginpage"></a></div>
           <div class="login-main myshadow"> 
-            <form class="theme-form" action="{{route('authenticate')}}" method="POST">
+            <form class="theme-form" action="{{route('login.authenticate')}}" method="POST">
                 @csrf
               <h4 class="text-center mb-5">Connectez-vous</h4>
               {{-- <p>Entrez votre numéro et mot de passe pour vous connecter</p> --}}

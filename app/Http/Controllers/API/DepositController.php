@@ -31,16 +31,6 @@ class DepositController extends Controller
         
         $verify_number = new VerifyNumberController;
         $receiver_phone = $verify_number->verify_number($request->receiver_phone);
-        // $sender_phone = '';
-        // if (empty($request->sender_phone)) {
-        //     $sender_phone = null;
-        // }
-        // else {
-        //     $sender_phone = $verify_number->verify_number($request->sender_phone);
-        // }
-
-        // $sender_first = $request->sender_first;
-        // $sender_last = $request->sender_last;
 
         $receiver_first = $request->receiver_first;
         $receiver_last = $request->receiver_last;
@@ -55,23 +45,17 @@ class DepositController extends Controller
         $payment_method     = "Emala Gateway";
 
         $initialize = new DepositAPI;
-        $authorization = $initialize->cash_register_verify();
-    
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+        $response = $initialize->internal_deposit($reference,$receiver_phone,$receiver_first,$receiver_last,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
+        if ($response['success'] == true) {
+            Alert::success('Succès', $response['message']);
             return redirect()->back();
         }
-        else {
-            $response = $initialize->internal_deposit($reference,$receiver_phone,$receiver_first,$receiver_last,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
-            if ($response['success'] == true) {
-                Alert::success('Succès', $response['message']);
-                return redirect()->back();
-            }
-            elseif ($response['success'] == false) {
-                Alert::error('Echec', $response['message']);
-                return redirect()->back();
-            }
+        elseif ($response['success'] == false) {
+            Alert::error('Echec', $response['message']);
+            return redirect()->back();
         }
+        
          
     }
 
@@ -104,24 +88,17 @@ class DepositController extends Controller
 
         
         $initialize = new DepositAPI;
-        // $authorization = $initialize->cash_register_verify();
-        $authorization['success'] = true;
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+        $response = $initialize->external_deposit($senderFirstname,$senderLastname,$sender_number,$receiver_number,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
+        if ($response['success'] == true) {
+            Alert::success('Succès', $response['message']);
             return redirect()->back();
         }
-        else {
-            $response = $initialize->external_deposit($senderFirstname,$senderLastname,$sender_number,$receiver_number,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
-            if ($response['success'] == true) {
-                Alert::success('Succès', $response['message']);
-                return redirect()->back();
-            }
-            elseif ($response['success'] == false) {
-                Alert::error('Echec', $response['message']);
-                return redirect()->back();
-            }
+        elseif ($response['success'] == false) {
+            Alert::error('Echec', $response['message']);
+            return redirect()->back();
         }
+        
          
     }
 }

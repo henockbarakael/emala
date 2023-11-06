@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+       
     ];
 
     /**
@@ -25,9 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('branche:update')->dailyAt('16:30');
-        $schedule->command('branche:update')->everyMinute();
-        // $schedule->call('App\Http\Controllers\API\BrancheOperationController@mobile')->everyMinute();
+
+        $schedule->command('consolidate:funds')->everyTenMinutes();
     }
 
     /**

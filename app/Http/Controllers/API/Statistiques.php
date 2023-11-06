@@ -165,8 +165,8 @@ class Statistiques extends Controller
         $balance_cdf = DB::table('accounts')->where('currency', 'CDF')->where('user_id', $user_id)->first();
         $balance_usd = DB::table('accounts')->where('currency', 'USD')->where('user_id', $user_id)->first();
         $data = [
-            'solde_cdf' => $balance_cdf->balance,
-            'solde_usd' => $balance_usd->balance,
+            'solde_cdf' => $balance_cdf->amount,
+            'solde_usd' => $balance_usd->amount,
         ];
         return $data;
     }

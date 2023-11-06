@@ -26,14 +26,14 @@ class CreateUsersTable extends Migration
             $table->string('middlename')->nullable();
             $table->string('rec_id')->index();
             $table->string('email')->unique()->nullable();
-            $table->string('join_date')->unique();
+            $table->string('join_date')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('password');
             $table->string('password_salt');
             $table->string('address')->nullable();
             $table->string('city')->nullable();
             $table->string('country')->nullable();
-            $table->string('status')->nullable()->comment('1=> Active, 2 => Inactive, 3 => Blocked');
+            $table->string('status')->default('Active');
             $table->string('user_status')->default('Hors ligne');
             $table->string('role_name')->nullable();
             $table->string('avatar')->nullable();

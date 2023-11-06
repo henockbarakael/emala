@@ -50,7 +50,7 @@
                     <td class="text-center">
                         @if ($value->status == "En attente")
                         <span class="badge badge-warning">{{$value->status}}</span>
-                        @elseif ($value->status == "Approuver")
+                        @elseif ($value->status == "Approuvé")
                         <span class="badge badge-success">{{$value->status}}</span>
                         @endif
                         

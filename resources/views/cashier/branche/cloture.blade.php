@@ -1,489 +1,216 @@
-@extends('layouts.master')
+@extends('layouts.caisse')
 @section('content')
-@section('title','Ouverture-Clôture de caisse')
-@section('page','Ouverture-Clôture de caisse')
+@section('title','Clôture de caisse')
+@section('page','Clôture de caisse')
 {!! Toastr::message() !!}
-  <div class="page-body">
 
-    @include('layouts.page-title')
-    @include('sweetalert::alert')
-      <!-- Container-fluid starts-->
-        <div class="container-fluid">
+        <div class="container" >
 
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>GESTION DE CAISSE</h5><span>Session de caisse du {{$todayDate}}</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                @if ($authorization['success'] == false)
-                                @if ($last_solde == null)
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget">
-                                    <div class="card-body shadow shadow-showcase support-ticket-font" style="background-color: #0990ff">
-                                        <div class="row">
-                                        <div class="col-12"><span class="text-white">FOND DE CAISSE</span>
-                                            <ul >
-                                                <li style="font-size: 14px; font-weight: bold">CDF<span class="ms-2 text-dark">{{$last_dernierSoldeFc}}</span></li>
-                                                <li style="font-size: 14px; font-weight: bold">USD<span class="ms-2 text-dark">{{$last_solde_ouverture_usd}}</span></li>
-                                                <li style="font-size: 14px;" class="text-dark">Dernière clôture:<span class="texte-white ms-2">-</span></li>
-                                            </ul>
-                                        </div>
-                                        </div>
-                                    </div>
-                                    </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        
+                        <div class="card shadow shadow-showcase">
+                            <div class="card-header">
+                                <button type="button"class="btn btn-success shadow shadow-showcase" onclick="redirectToDashboard()">Revenir à la page d'accueil</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-header bg-primary">
+                                    {{-- <h5>Clôture de la Session de Caisse</h5><span>Session de caisse du {{$todayDate}}</span> --}}
+                                    <div class="media faq-widgets">
+                                        <div class="media-body">
+                                          <h5>Clôture de la Session de Caisse</h5>
+                                          <p class="mt-2">Pour une gestion précise et transparente de nos opérations, veuillez procéder à la clôture de votre dernière session de caisse.</p>
+                                          <ol> <li>Vérification des transactions : Assurez-vous que toutes les transactions ont été correctement enregistrées.</li> <li>Comptage de l'argent liquide : Comptez le montant total de l'argent liquide dans la caisse.</li> <li>Vérification des montants : Vérifiez que le montant enregistré dans le système correspond au montant réel en caisse.</li> <li>Ajustements éventuels : Effectuez les ajustements nécessaires en cas de différence entre les montants enregistrés et réels.</li> <li>Enregistrement de la clôture : Enregistrez la clôture de la session de caisse dans le système.</li> </ol>
+                                        </div><i data-feather="file-text"></i>
+                                      </div>
                                 </div>
-                                @else
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget">
-                                    <div class="card-body shadow shadow-showcase support-ticket-font" style="background-color: #0990ff">
-                                        <div class="row">
-                                        <div class="col-12"><span class="text-white" style="text-transform: uppercase">fonds de caisse précédent</span>
-                                            <ul >
-                                                <li style="font-size: 14px; font-weight: bold">CDF<span class="ms-2 text-dark">{{$last_dernierSoldeFc}}</span></li>
-                                                <li style="font-size: 14px; font-weight: bold">USD<span class="ms-2 text-dark">{{$last_solde_ouverture_usd}}</span></li>
-                                                <li style="font-size: 14px;" class="text-dark">Dernière clôture:<span class="texte-white ms-2">{{$created_at}}</span></li>
-                                            </ul>
-                                        </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                @endif
-                                @elseif ($authorization['success'] == true)
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget">
-                                    <div class="card-body shadow shadow-showcase support-ticket-font" style="background-color: #0990ff">
-                                        <div class="row">
-                                        <div class="col-12"><span class="text-white">SOLDE OUVERTURE</span>
-                                            <ul >
-                                                <li style="font-size: 14px; font-weight: bold">CDF<span class="ms-2 text-dark">{{$dernierSoldeFc}}</span></li>
-                                                <li style="font-size: 14px; font-weight: bold">USD<span class="ms-2 text-dark">{{$dernierSoldeUs}}</span></li>
-                                                <li style="font-size: 14px;" class="text-dark">Date d'ouverture:<span class="texte-white ms-2">{{$dateOuverture}}</span></li>
-                                            </ul>
-                                        </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                @endif
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget">
-                                    <div class="card-body shadow shadow-showcase support-ticket-font" style="background-color: #0990ff">
-                                        <div class="row">
-                                        <div class="col-5"><span class="text-white">E/S CAISSE</span>
-                                            <h3 class="total-num counter">Nbre. Trx. {{$total_trx}}</h3>
-                                        </div>
-                                        <div class="col-7">
-                                            <div class="text-end">
-                                            <ul>
-                                                <li style="font-size: 14px; font-weight: bold">{{$credit_cdf}} CDF <span class="product-stts text-warning ms-2"><i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                                <li style="font-size: 14px; font-weight: bold">{{$credit_usd}} USD <span class="product-stts text-warning ms-2"><i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                                {{-- <li></li> --}}
-                                                <li style="font-size: 14px; font-weight: bold">{{$debit_cdf}} CDF <span class="product-stts text-white ms-2"><i class="icon-angle-up f-12 ms-1"></i></span></li>
-                                                <li style="font-size: 14px; font-weight: bold">{{$debit_usd}} USD <span class="product-stts text-white ms-2"><i class="icon-angle-up f-12 ms-1"></i></span></li>
-                                            </ul>
+                                <form action="#">
+                                    @csrf
+                                    <div class="row">
+                                        <div class="col-xl-12 col-sm-12 box-col-12">
+                                            <div class="card ecommerce-widget shadow shadow-showcase">
+                                                <div class="card-body support-ticket-font">
+                                                    <div class="row">
+                                                    <div class="col-5"><span>Solde Théorique</span>
+                                                        <h3 class="total-num counter" style="font-size: 12px">(Solde à l'ouverture + Credit) - Debit</h3>
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <div class="text-end">
+                                                        <ul>
+                                                            <li>CDF<span class="product-stts txt-danger ms-2">{{$solde_theorique_cdf}}<i class="icon-angle-up f-12 ms-1"></i></span></li>
+                                                            <li>USD<span class="product-stts txt-danger ms-2">{{$solde_theorique_usd}}<i class="icon-angle-up f-12 ms-1"></i></span></li>
+                                                        </ul>
+                                                        </div>
+                                                    </div>
+                                                    </div>
+                                                    <div class="progress-showcase">
+                                                    <div class="progress sm-progress-bar">
+                                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        </div>
-                                        
-                                    </div>
-                                    </div>
-                                </div>
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget shadow shadow-showcase">
-                                    <div class="card-body support-ticket-font">
-                                        <div class="row">
-                                        <div class="col-5"><span>Balance actuelle</span>
-                                            <h3 class="total-num counter"><img class="img-fluid" src="{{ asset('assets/images/logo/logo.png')}}" alt="" width="60px" height="60px"></h3>
-                                        </div>
-                                        <div class="col-7">
-                                            <div class="text-end">
-                                            <ul>
-                                                <li>CDF<span class="product-stts txt-success ms-2">{{$agence_cdf}}<i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                                <li>USD<span class="product-stts txt-success ms-2">{{$agence_usd}}<i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                            </ul>
+                                        <div class="col-md-6">
+                                            <div class="table-responsive shadow shadow-showcase">
+                                                <table class="table table-bordered review-table mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Unité(Fc)</th>
+                                                            <th>Nombre</th>
+                                                            <th>Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>50,00</td>
+                                                            <td><input id="n1" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out1"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>100,00</td>
+                                                            <td><input id="n2" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out2"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>200,00</td>
+                                                            <td><input id="n3" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out3"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>500,00</td>
+                                                            <td><input id="n4" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out4"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>1000,00</td>
+                                                            <td><input id="n5" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out5"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>5000,00</td>
+                                                            <td><input id="n6" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out6"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>10000,00</td>
+                                                            <td><input id="n7" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out7"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>20000,00</td>
+                                                            <td><input id="n8" oninput="add_number()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" class="form-control" readonly id="sum-out8"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Solde réel en espèces</b></td>
+                                                            <td colspan="1" class="text-center"><input type="text" id="resultat_fc" class="form-control" readonly></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Ecart caisse</b></td>
+                                                            <td colspan="1" class="text-center"><input type="text" id="ecart_fc" class="form-control" readonly></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Transfert en banque</b></td>
+                                                            <td colspan="1" class="text-center"><input id="transfert_fc" oninput="add_number()" type="text" value="0" class="form-control"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Montant à reporter</b></td>
+                                                            <td colspan="1" class="text-center"><input type="text" id="report_fc" class="form-control" readonly></td>
+                                                        </tr>
+                                                        
+
+                                                        {{-- <tr>
+                                                            <td colspan="3" class="text-center">
+                                                                <div class="grade-span">
+                                                                    <a href="#" class="btn btn-success" data-toggle="modal" data-target="#add_promotion"><i class="fa fa-plus"></i> Valider</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr> --}}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget shadow shadow-showcase">
-                                    <div class="card-body support-ticket-font">
-                                        <div class="row">
-                                        <div class="col-5"><span>Revenue</span>
-                                            <h3 class="total-num counter"><img class="img-fluid" src="{{ asset('assets/images/logo/logo.png')}}" alt="" width="60px" height="60px"></h3>
-                                        </div>
-                                        <div class="col-7">
-                                            <div class="text-end">
-                                            <ul>
-                                                <li>CDF<span class="product-stts txt-success ms-2">{{$fees_cdf}}<i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                                <li>USD<span class="product-stts txt-success ms-2">{{$fees_usd}}<i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                            </ul>
+                                        <div class="col-md-6">
+                                            <div class="table-responsive shadow shadow-showcase">
+                                                <table class="table table-bordered review-table mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Unité($)</th>
+                                                            <th>Nombre</th>
+                                                            <th>Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>1,00</td>
+                                                            <td><input id="s1" oninput="add()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" id="mum-out1" class="form-control" readonly value=""></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>5,00</td>
+                                                            <td><input id="s2" oninput="add()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" id="mum-out2" class="form-control" readonly value=""></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>10,00</td>
+                                                            <td><input id="s3" oninput="add()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" id="mum-out3" class="form-control" readonly value=""></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>20,00</td>
+                                                            <td><input id="s4" oninput="add()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" id="mum-out4" class="form-control" readonly value=""></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>50,00</td>
+                                                            <td><input id="s5" oninput="add()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" id="mum-out5" class="form-control" readonly value=""></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>100,00</td>
+                                                            <td><input id="s6" oninput="add()" type="text" class="form-control" ></td>
+                                                            <td><input type="text" id="mum-out6" class="form-control" readonly value=""></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Solde réel en espèces</b></td>
+                                                            <td colspan="1" class="text-center"><input type="text" id="resultat_usd" class="form-control" readonly ></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Ecart caisse</b></td>
+                                                            <td colspan="1" class="text-center"><input type="text" id="ecart_usd" class="form-control" readonly ></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" class="text-left" style="font-size: 14px;"><b>Transfert en banque</b></td>
+                                                            <td colspan="1" class="text-center"><input id="transfert_usd" oninput="add()" type="text" value="0"  class="form-control"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2"  class="text-left" style="font-size: 14px;"><b>Montant à reporter</b></td>
+                                                            <td colspan="1" class="text-center"><input type="text" id="report_usd" class="form-control" readonly></td>
+                                                        </tr>
+                                                        {{-- <tr>
+                                                            <td colspan="3" class="text-center">
+                                                                <div class="grade-span">
+                                                                    <a href="#" class="btn btn-success" data-toggle="modal" data-target="#add_promotion"><i class="fa fa-plus"></i> Valider</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr> --}}
+                                                    </tbody>
+                                                </table>
                                             </div>
-                                        </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget shadow shadow-showcase">
-                                    <div class="card-body support-ticket-font">
-                                        <div class="row">
-                                        <div class="col-5"><span>Entrée</span>
-                                            <h3 class="total-num counter">{{$total_credit}}</h3>
-                                        </div>
-                                        <div class="col-7">
-                                            <div class="text-end">
-                                            <ul>
-                                                <li>CDF<span class="product-stts txt-success ms-2">{{$credit_cdf}}<i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                                <li>USD<span class="product-stts txt-success ms-2">{{$credit_usd}}<i class="icon-angle-down f-12 ms-1"></i></span></li>
-                                            </ul>
-                                            </div>
-                                        </div>
-                                        </div>
-                                        <div class="progress-showcase">
-                                        <div class="progress sm-progress-bar">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
+                                            
+                                            <button type="submit"  class="btn btn-danger confirmCloture shadow shadow-showcase mt-4">Clôturer la caisse</button>
+                                            <button type="button"  class="btn btn-primary gotoHome shadow shadow-showcase mt-4" onclick="redirectToDashboard()">Revenir à la page d'accueil</button>
+
                                         </div>
                                     </div>
-                                    </div>
-                                </div>
-                                <div class="col-xl-6 col-sm-6 box-col-6">
-                                    <div class="card ecommerce-widget shadow shadow-showcase">
-                                    <div class="card-body support-ticket-font">
-                                        <div class="row">
-                                        <div class="col-5"><span>Sortie</span>
-                                            <h3 class="total-num counter">{{$total_debit}}</h3>
-                                        </div>
-                                        <div class="col-7">
-                                            <div class="text-end">
-                                            <ul>
-                                                <li>CDF<span class="product-stts txt-danger ms-2">{{$debit_cdf}}<i class="icon-angle-up f-12 ms-1"></i></span></li>
-                                                <li>USD<span class="product-stts txt-danger ms-2">{{$debit_usd}}<i class="icon-angle-up f-12 ms-1"></i></span></li>
-                                            </ul>
-                                            </div>
-                                        </div>
-                                        </div>
-                                        <div class="progress-showcase">
-                                        <div class="progress sm-progress-bar">
-                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card shadow shadow-showcase">
-                        <div class="card-body">
-                            <form action="#">
-                                @csrf
-                                <div class="row">
-                                    <div class="col-xl-12 col-sm-12 box-col-12">
-                                        <div class="card ecommerce-widget shadow shadow-showcase">
-                                            <div class="card-body support-ticket-font">
-                                                <div class="row">
-                                                <div class="col-5"><span>Solde Théorique</span>
-                                                    <h3 class="total-num counter" style="font-size: 12px">(Solde à l'ouverture + Credit) - Debit</h3>
-                                                </div>
-                                                <div class="col-7">
-                                                    <div class="text-end">
-                                                    <ul>
-                                                        <li>CDF<span class="product-stts txt-danger ms-2">{{$solde_theorique_cdf}}<i class="icon-angle-up f-12 ms-1"></i></span></li>
-                                                        <li>USD<span class="product-stts txt-danger ms-2">{{$solde_theorique_usd}}<i class="icon-angle-up f-12 ms-1"></i></span></li>
-                                                    </ul>
-                                                    </div>
-                                                </div>
-                                                </div>
-                                                <div class="progress-showcase">
-                                                <div class="progress sm-progress-bar">
-                                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="table-responsive shadow shadow-showcase">
-                                            <table class="table table-bordered review-table mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Unité(Fc)</th>
-                                                        <th>Nombre</th>
-                                                        <th>Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>50,00</td>
-                                                        <td><input id="n1" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out1"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>100,00</td>
-                                                        <td><input id="n2" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out2"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>200,00</td>
-                                                        <td><input id="n3" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out3"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>500,00</td>
-                                                        <td><input id="n4" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out4"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1000,00</td>
-                                                        <td><input id="n5" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out5"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>5000,00</td>
-                                                        <td><input id="n6" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out6"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>10000,00</td>
-                                                        <td><input id="n7" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out7"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>20000,00</td>
-                                                        <td><input id="n8" oninput="add_number()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" class="form-control" readonly id="sum-out8"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Solde réel en espèces</b></td>
-                                                        <td colspan="1" class="text-center"><input type="text" id="resultat_fc" class="form-control" readonly></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Ecart caisse</b></td>
-                                                        <td colspan="1" class="text-center"><input type="text" id="ecart_fc" class="form-control" readonly></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Transfert en banque</b></td>
-                                                        <td colspan="1" class="text-center"><input id="transfert_fc" oninput="add_number()" type="text" value="0" class="form-control"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Montant à reporter</b></td>
-                                                        <td colspan="1" class="text-center"><input type="text" id="report_fc" class="form-control" readonly></td>
-                                                    </tr>
-                                                    
+        </div>
 
-                                                    {{-- <tr>
-                                                        <td colspan="3" class="text-center">
-                                                            <div class="grade-span">
-                                                                <a href="#" class="btn btn-success" data-toggle="modal" data-target="#add_promotion"><i class="fa fa-plus"></i> Valider</a>
-                                                            </div>
-                                                        </td>
-                                                    </tr> --}}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="table-responsive shadow shadow-showcase">
-                                            <table class="table table-bordered review-table mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Unité($)</th>
-                                                        <th>Nombre</th>
-                                                        <th>Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>1,00</td>
-                                                        <td><input id="s1" oninput="add()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" id="mum-out1" class="form-control" readonly value=""></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>5,00</td>
-                                                        <td><input id="s2" oninput="add()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" id="mum-out2" class="form-control" readonly value=""></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>10,00</td>
-                                                        <td><input id="s3" oninput="add()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" id="mum-out3" class="form-control" readonly value=""></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>20,00</td>
-                                                        <td><input id="s4" oninput="add()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" id="mum-out4" class="form-control" readonly value=""></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>50,00</td>
-                                                        <td><input id="s5" oninput="add()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" id="mum-out5" class="form-control" readonly value=""></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>100,00</td>
-                                                        <td><input id="s6" oninput="add()" type="text" class="form-control" ></td>
-                                                        <td><input type="text" id="mum-out6" class="form-control" readonly value=""></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Solde réel en espèces</b></td>
-                                                        <td colspan="1" class="text-center"><input type="text" id="resultat_usd" class="form-control" readonly ></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Ecart caisse</b></td>
-                                                        <td colspan="1" class="text-center"><input type="text" id="ecart_usd" class="form-control" readonly ></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2" class="text-left" style="font-size: 14px;"><b>Transfert en banque</b></td>
-                                                        <td colspan="1" class="text-center"><input id="transfert_usd" oninput="add()" type="text" value="0"  class="form-control"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="2"  class="text-left" style="font-size: 14px;"><b>Montant à reporter</b></td>
-                                                        <td colspan="1" class="text-center"><input type="text" id="report_usd" class="form-control" readonly></td>
-                                                    </tr>
-                                                    {{-- <tr>
-                                                        <td colspan="3" class="text-center">
-                                                            <div class="grade-span">
-                                                                <a href="#" class="btn btn-success" data-toggle="modal" data-target="#add_promotion"><i class="fa fa-plus"></i> Valider</a>
-                                                            </div>
-                                                        </td>
-                                                    </tr> --}}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        
-                                        <button type="submit"  class="btn btn-danger confirmCloture shadow shadow-showcase mt-4">CLÔTURER LA CAISSE</button>
-
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      <!-- Container-fluid Ends-->
-    </div>
-  <div class="modal fade" id="open" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel2">OUVERTURE DE CAISSE {{$todayDate}}</h5>
-        </div>
-        <div class="modal-body">
-            <form action="{{route('cashier.fondcaisse.ouverture')}}" method="POST">
-                @csrf
-                <input type="hidden" name="user_id" id="e_id" value="">
-                
-                <div class="row g-3">
-                    <div class="card-header">
-                        <h5>ETAT DE CAISSE</h5>
-                        <span>
-                            Enregistrez ici la somme actuelle en franc congolais et dollar américain présente en caisse
-                        </span>
-                    </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="validationCustom01">Franc Congolais</label>
-                    <input class="form-control input-air-primary @error('new_solde_cdf') is-invalid @enderror" name="new_solde_cdf" id="e_new_solde_cdf" type="text" value="" >
-                    @error('new_solde_cdf')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                    <div class="valid-feedback">Looks good!</div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label" for="validationCustom02">Dollar Américain</label>
-                    <input class="form-control input-air-primary @error('new_solde_usd') is-invalid @enderror" name="new_solde_usd" id="e_new_solde_usd" type="text" value="" >
-                    @error('new_solde_usd')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                    <div class="valid-feedback">Looks good!</div>
-                  </div>
-                  <div class="card-header">
-                    {{-- <h5>ETAT DE CAISSE</h5> --}}
-                    <span>
-                        Ancien solde
-                    </span>
-                 </div>
-                  <div class="col-md-6" style="margin-top: -10px">
-                    <label class="form-label" for="validationCustom01"></label>
-                    <input readonly class="form-control input-air-primary @error('last_solde_cdf') is-invalid @enderror" name="last_solde_cdf" id="e_last_solde_cdf" type="tel" value="{{$account_cdf->balance}}" >
-                    @error('last_solde_cdf')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                    <div class="valid-feedback">Looks good!</div>
-                  </div>
-                  <div class="col-md-6" style="margin-top: -10px">
-                    <label class="form-label" for="validationCustom01"></label>
-                    <input readonly class="form-control input-air-primary @error('last_solde_usd') is-invalid @enderror" name="last_solde_usd" id="e_last_solde_usd" type="tel" value="{{$account_usd->balance}}" >
-                    @error('last_solde_usd')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                    <div class="valid-feedback">Looks good!</div>
-                  </div>
-
-                </div>
-                
-                <div class="modal-footer mt-5">
-                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Close</button>
-                    <button class="btn btn-primary" type="submit">Valider</button>
-                  </div>
-              </form>
-          </div>
-          
-      </div>
-    </div>
-  </div>
-  <div class="modal fade" id="details" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        {{-- <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel2">Détails de la transaction</h5>
-        </div> --}}
-        <div class="modal-body">
-          <div class="row">
-          <div class="col-sm-12 col-xl-12">
-            <div class="card">
-              <div class="card-body bg-black">
-                <div class="text-center mb-2"><i class="fa fa-info-circle fa-2x" style="color: dodgerblue"></i></div>
-                <h4 style="font-weight:900 bold" class="sub-title text-center">Détails De La Transaction</h4>
-                <div class="email-general">
-                  <ul class="mt-5">
-                    <li>Description <div class=" pull-right"><input style="border: none;text-align:right; text-transform:capitalize" class="font-primary" id="m_type" value=""></div></li>
-                    <li class="mt-3">Expéditeur<div class=" pull-right"><input style="border: none;text-align:right;" class="font-primary" id="m_sender" value=""></div></li>
-                    <li class="mt-3">Bénéficiaire <div class=" pull-right"><input style="border: none;text-align:right;" class="font-primary" id="m_receiver" value=""></div></li>
-                    <li class="mt-3">Référence <div class=" pull-right"><input style="border: none;text-align:right;" class="font-primary" id="m_reference" value=""></div></li>
-                    <li class="mt-3">Devise <div class=" pull-right"><input style="border: none;text-align:right;" class="font-primary" id="m_currency" value=""></div></li>
-                    <li class="mt-3">Montant <div class=" pull-right "><input style="border: none;text-align:right;" class="font-primary" id="m_amount" value=""></div></li>
-                    <li class="mt-3">Frais <div class=" pull-right"><input style="border: none;text-align:right;" class="font-primary" id="m_fees" value=""></div></li>
-                    <li class="mt-3">Date <div class=" pull-right"><input style="border: none;text-align:right;" class="font-primary" id="m_date" value=""></div></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-    </div>
-  </div>
   @section('script')
     {{-- update js --}}
     <script>
@@ -501,6 +228,9 @@
             $('.e_id').val(_this.find('.ids').text());
             $('.e_avatar').val(_this.find('.image').text());
         });
+        function redirectToDashboard() {
+        window.location.href = "{{ route('cashier.dashboard') }}";
+    }
     </script>
     <script>
       $(document).on('click','.details',function()
@@ -519,53 +249,73 @@
     </script>
 
     <script type="text/javascript">
-    $(".confirmCloture").click(function(event){
-        event.preventDefault();
-        var soldeFC = document.getElementById("resultat_fc").value;
-        var ecartFC = document.getElementById("ecart_fc").value;
-        var banqueFC = document.getElementById("transfert_fc").value;
-        var reportFC = document.getElementById("report_fc").value;
-        var soldeUSD = document.getElementById("resultat_usd").value;
-        var ecartUSD = document.getElementById("ecart_usd").value;
-        var banqueUSD = document.getElementById("transfert_usd").value;
-        var reportUSD = document.getElementById("report_usd").value;
-        var url = 'cloture-caisse';
-        var redirect = 'ouverture-caisse';
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+        $(".confirmCloture").click(function(event){
+            event.preventDefault();
+            var soldeFC = document.getElementById("resultat_fc").value;
+            var ecartFC = document.getElementById("ecart_fc").value;
+            var banqueFC = document.getElementById("transfert_fc").value;
+            var reportFC = document.getElementById("report_fc").value;
+            var soldeUSD = document.getElementById("resultat_usd").value;
+            var ecartUSD = document.getElementById("ecart_usd").value;
+            var banqueUSD = document.getElementById("transfert_usd").value;
+            var reportUSD = document.getElementById("report_usd").value;
+            var url = 'cloture-caisse';
+            var redirect = 'ouverture-caisse';
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    soldeFC: soldeFC,
+                    ecartFC: ecartFC,
+                    banqueFC: banqueFC,
+                    reportFC: reportFC,
+                    soldeUSD: soldeUSD,
+                    ecartUSD: ecartUSD,
+                    banqueUSD: banqueUSD,
+                    reportUSD: reportUSD,
+                },
+                success: function(response) {
+                    if (response.status == true) {
+                        Swal.fire({
+                            title: 'Excellent!',
+                            text: response.message,
+                            icon: 'success'
+                        }).then(function() {
+                            // Effectuer une déconnexion en envoyant une requête POST
+                            var logoutForm = document.createElement('form');
+                            logoutForm.method = 'POST';
+                            logoutForm.action = '{{ route("logout") }}';
+
+                            // Ajouter le token CSRF si nécessaire
+                            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+                            if (csrfToken) {
+                                var csrfInput = document.createElement('input');
+                                csrfInput.type = 'hidden';
+                                csrfInput.name = '_token';
+                                csrfInput.value = csrfToken.content;
+                                logoutForm.appendChild(csrfInput);
+                            }
+
+                            document.body.appendChild(logoutForm);
+                            logoutForm.submit();
+                        });
+                    } else if (response.status == false) {
+                        Swal.fire({
+                            title: 'Erreur!',
+                            text: response.message,
+                            icon: 'error'
+                        }).then(function() {
+                            window.location.href = redirect;
+                        });
+                    }
+                }
+            });
         });
-        $.ajax({
-            url: url,
-            type:"POST",
-            data:{
-              soldeFC:soldeFC,
-              ecartFC:ecartFC,
-              banqueFC:banqueFC,
-              reportFC:reportFC,
-              soldeUSD:soldeUSD,
-              ecartUSD:ecartUSD,
-              banqueUSD:banqueUSD,
-              reportUSD:reportUSD,
-            },
-            success:function(response){
-                if(response.status == true) {
-                    toastr.success(response.message, 'Parfait!');
-                    setTimeout(() => {
-                     window.location = redirect;
-                },3000)
-              }
-              else if(response.status == false) {
-                toastr.error(response.message, 'Erreur!');
-                setTimeout(() => {
-                    window.location.href = redirect;     
-                },3000);
-                
-              }
-            }
-        });
-    });
     </script>
 
     <script type="text/javascript">
@@ -614,7 +364,12 @@
                 var somme_fc = num1 + num2 + num3 + num4 + num5 + num6 + num7 + num8;
                 var ecart_1 = ca1 - somme_fc;
                 var report_1 = somme_fc - trxfc;
-                @if ($somme_fc == null && $ecart_1 == null && $report_1 == null) {
+                var reportFC = 15000;
+                
+
+                var banqueFC = somme_fc - reportFC;
+              
+                if (somme_fc == null && ecart_1 == null && report_1 == null) {
                     document.getElementById("sum-out1").value = 0;
                     document.getElementById("sum-out2").value = 0;
                     document.getElementById("sum-out3").value = 0;
@@ -625,9 +380,11 @@
                     document.getElementById("sum-out8").value = 0;
                     document.getElementById("resultat_fc").value = somme_fc;
                     document.getElementById("ecart_fc").value = ecart_1;
-                    document.getElementById("report_fc").value = report_1;
+                    document.getElementById("report_fc").value = reportFC;
+                    document.getElementById("transfert_fc").value = banqueFC.toFixed(2);
+                    document.getElementById("transfert_fc").readOnly = true;
                 }
-                @elseif ($somme_fc != null && $ecart_1 != null && $report_1 != null) {
+                else {
                     document.getElementById("sum-out1").value = result1;
                     document.getElementById("sum-out2").value = result2;
                     document.getElementById("sum-out3").value = result3;
@@ -638,9 +395,11 @@
                     document.getElementById("sum-out8").value = result8;
                     document.getElementById("resultat_fc").value = somme_fc;
                     document.getElementById("ecart_fc").value = ecart_1;
-                    document.getElementById("report_fc").value = report_1;
+                    document.getElementById("report_fc").value =reportFC;
+                    document.getElementById("transfert_fc").value = banqueFC.toFixed(2);
+                    document.getElementById("transfert_fc").readOnly = true;
                 }
-                @endif
+                
                 
             }
     </script>
@@ -680,7 +439,9 @@
                 var somme_usd = no1 + no2 + no3 + no4 + no5 + no6;
                 var ecart_2 = ca2 - somme_usd;
                 var report_2 = somme_usd - trxusd;
-                @if (somme_usd == null && ecart_2 == null && report_2 == null) {
+                var reportUSD = 10;
+                var banqueUSD = somme_usd - reportUSD;
+                if (somme_usd == null && ecart_2 == null && report_2 == null) {
                     document.getElementById("resultat_usd").value = somme_usd;
                     document.getElementById("mum-out1").value = 0;
                     document.getElementById("mum-out2").value = 0;
@@ -689,9 +450,11 @@
                     document.getElementById("mum-out5").value = 0;
                     document.getElementById("mum-out6").value = 0;
                     document.getElementById("ecart_usd").value = ecart_2;
-                    document.getElementById("report_usd").value = report_2;
+                    document.getElementById("report_usd").value = reportUSD;
+                    document.getElementById("transfert_usd").value = banqueUSD.toFixed(2);
+                    document.getElementById("transfert_usd").readOnly = true;
                 }
-                @if (somme_usd != null && ecart_2 != null && report_2 != null) {
+                else  {
                     document.getElementById("resultat_usd").value = somme_usd;
                     document.getElementById("mum-out1").value = res1;
                     document.getElementById("mum-out2").value = res2;
@@ -700,7 +463,9 @@
                     document.getElementById("mum-out5").value = res5;
                     document.getElementById("mum-out6").value = res6;
                     document.getElementById("ecart_usd").value = ca2 - somme_usd;
-                    document.getElementById("report_usd").value = report_2;
+                    document.getElementById("report_usd").value = reportUSD;
+                    document.getElementById("transfert_usd").value = banqueUSD.toFixed(2);
+                    document.getElementById("transfert_usd").readOnly = true;
                 }
                 
             }
@@ -711,4 +476,4 @@
     </script>
     @endif
     @endsection
-@endsection
+    @endsection

@@ -228,7 +228,7 @@ class TicketController extends Controller
         $response = $details->topup_account($amount, $account_id,$currency,$account_level);
        
         if ($response['success'] == true) {
-            $datas = ['status'=> "Approuver",'updated_at'=> $todayDate];
+            $datas = ['status'=> "Approuvé",'updated_at'=> $todayDate];
             $update = RechargeRequest::where('id',$requestId)->update($datas);
             if ($update) {
                 Alert::success('Succès', $response['message']);

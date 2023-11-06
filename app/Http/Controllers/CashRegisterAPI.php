@@ -6,7 +6,9 @@ use App\Http\Controllers\API\Initialize;
 use App\Http\Controllers\API\Statistiques;
 use App\Http\Controllers\API\UserAccountAPI;
 use App\Models\Account;
+use App\Models\Cashier;
 use App\Models\CashRegister;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,22 +17,16 @@ use Illuminate\Support\Facades\DB;
 class CashRegisterAPI extends Controller
 {
     public function cloture($IDdernierSoldeFc,$IDdernierSoldeUs,$ecartFC,$banqueFC,$reportFC,$soldeUSD,$ecartUSD,$banqueUSD,$reportUSD){
-        $initialize = new Initialize;
-        $branche_id = $initialize->branche_id(Auth::user()->id);
-        $balanceAccount = new Statistiques;
-        if (Auth::user()->role_name == "Manager") {
-            $balance_agence = $balanceAccount->balance_agence();
-            $branche_id = $initialize->branche_id(Auth::user()->id);
-        }
-        elseif (Auth::user()->role_name == "Cashier") {
-            $balance_agence = $balanceAccount->getCashierBalance();
-            $agence = Account::where('user_id',Auth::user()->id)->first();
-            $branche_id = $agence->branche_id;
-        }
-        $account_cdf = Account::where('branche_id',$branche_id)->where('user_id',Auth::user()->id)->where('currency','CDF')->first();
-        $account_1  = $account_cdf->id;
-        $account_usd = Account::where('branche_id',$branche_id)->where('user_id',Auth::user()->id)->where('currency','USD')->first();
-        $account_2  = $account_cdf->id;
+       
+
+        $cdfId = Cashier::where('user_id', Auth::user()->id)
+            ->where('currency', 'CDF')
+            ->value('id');
+
+        $usdId = Cashier::where('user_id', Auth::user()->id)
+            ->where('currency', 'USD')
+            ->value('id');
+
         $todayDate = $this->todayDate();
         $data_1 = [
             'closing_balance' => $reportFC,
@@ -47,19 +43,14 @@ class CashRegisterAPI extends Controller
             'updated_at'   => $todayDate,
         ];
 
-        $cash_1 = CashRegister::where('account_id',$account_cdf->id)->where('currency','CDF')->where('branche_id',$branche_id)->where('status','opened')->latest('opening_date')->update($data_1);
-        $cash_2 = CashRegister::where('account_id',$account_usd->id)->where('currency','USD')->where('branche_id',$branche_id)->where('status','opened')->latest('opening_date')->update($data_2);
+        $cash_1 = CashRegister::where('cashier_id',$cdfId)->where('status','opened')->latest('opening_date')->update($data_1);
+        $cash_2 = CashRegister::where('cashier_id',$usdId)->where('status','opened')->latest('opening_date')->update($data_2);
         if ($cash_1 && $cash_2) {
-            $this->reserve($banqueFC,$banqueUSD,$account_1,$account_2);
-            $getUserAccount = new UserAccountAPI;
-            $currency_cdf = "CDF";
-            $currency_usd = "USD";
-            $getUserAccount->debit_user($currency_cdf, $banqueFC);
-            $getUserAccount->debit_user($currency_usd, $banqueUSD);
-
-            $receiver = $this->user_account_wallet(Auth::user()->id);
-            $this->credit_wallet($receiver->id_wallet, $banqueFC, $currency_cdf);
-            $this->credit_wallet($receiver->id_wallet, $banqueUSD, $currency_usd);
+            // $this->reserve($banqueFC,$banqueUSD,$cdfId,$usdId);
+            $user = new User();
+            $cashierId = $user->getCashierId();
+            $cashier = Cashier::findOrFail($cashierId);
+            $cashier->agency->consoliderFonds($reportFC,$reportUSD);
 
             $response = [
                 'success' => true,
@@ -83,6 +74,7 @@ class CashRegisterAPI extends Controller
     }
 
     public function user_account_wallet($userid){
+        
         $resultat = DB::table('accounts')
         ->join('branches','accounts.branche_id','branches.id')
         ->join('users','accounts.user_id','users.id')
@@ -171,7 +163,16 @@ class CashRegisterAPI extends Controller
             'created_at'   => $todayDate,
             'updated_at'   => $todayDate,
         ];
-        DB::table('reserves')->insert($data_1); 
-        DB::table('reserves')->insert($data_2); 
+        if ($banqueFC != 0) {
+            DB::table('reserves')->insert($data_1); 
+        }
+        elseif ($banqueUSD != 0 ) {
+            DB::table('reserves')->insert($data_2); 
+        }
+        else {
+            return 1;
+        }
+        
+        
     }
 }

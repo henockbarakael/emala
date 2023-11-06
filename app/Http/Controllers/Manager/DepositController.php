@@ -70,23 +70,18 @@ class DepositController extends Controller
 
         
         $initialize = new DepositAPI;
-        $authorization = $initialize->cash_register_verify();
-        // dd($authorization);
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+
+        
+        $response = $initialize->internal_deposit($reference,$receiver_phone,$receiver_first,$receiver_last,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
+        if ($response['success'] == true) {
+            Alert::success('Succès', $response['message']);
             return redirect()->back();
         }
-        else {
-            $response = $initialize->internal_deposit($reference,$receiver_phone,$receiver_first,$receiver_last,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
-            if ($response['success'] == true) {
-                Alert::success('Succès', $response['message']);
-                return redirect()->back();
-            }
-            elseif ($response['success'] == false) {
-                Alert::error('Echec', $response['message']);
-                return redirect()->back();
-            }
+        elseif ($response['success'] == false) {
+            Alert::error('Echec', $response['message']);
+            return redirect()->back();
         }
+        
          
     }
 
@@ -117,28 +112,17 @@ class DepositController extends Controller
         $senderFirstname = $request->senderFirstname;
         $senderLastname = $request->senderLastname;
 
-        
         $initialize = new DepositAPI;
-        $authorization = $initialize->cash_register_verify();
-
-       
-       
-     
-        if ($authorization['success'] == false) {
-            Alert::error('Caisse Fermée', 'Veuillez ouvrir votre caisse avant d\'effectuer cette opération.');
+        $response = $initialize->external_deposit($senderFirstname,$senderLastname,$sender_number,$receiver_number,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
+        if ($response['success'] == true) {
+            Alert::success('Succès', $response['message']);
             return redirect()->back();
         }
-        else {
-            $response = $initialize->external_deposit($senderFirstname,$senderLastname,$sender_number,$receiver_number,$compte,$amount,$money_received,$fees,$remise,$currency,$payment_method);
-            if ($response['success'] == true) {
-                Alert::success('Succès', $response['message']);
-                return redirect()->back();
-            }
-            elseif ($response['success'] == false) {
-                Alert::error('Echec', $response['message']);
-                return redirect()->back();
-            }
+        elseif ($response['success'] == false) {
+            Alert::error('Echec', $response['message']);
+            return redirect()->back();
         }
+        
          
     }
 }
