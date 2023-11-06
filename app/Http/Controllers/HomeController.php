@@ -60,6 +60,7 @@ class HomeController extends Controller
         $balanceUSD = $balances->first()->balance_usd;
    
         $transactions = DB::table('transactions')
+        
         ->whereDate('created_at', $currentDate)
             ->selectRaw('count(*) as total')
             ->selectRaw("count(case when category = 'Retrait' then 1 end) as retrait")
