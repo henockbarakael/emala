@@ -102,7 +102,20 @@ class CustomerController extends Controller
                 )
                 ->where('users.id', $userId)
                 ->where('wallets.wallet_type', 'Saving')
-                ->groupBy('users.id', 'wallets.wallet_type')
+                ->groupBy(
+                    'users.id',
+                    'users.name',
+                    'users.firstname',
+                    'users.created_at',
+                    'users.phone',
+                    'users.address',
+                    'users.avatar',
+                    'users.country',
+                    'users.email',
+                    'users.role_name',
+                    'users.city',
+                    'wallets.wallet_type'
+                )
                 ->first();
 
             $snumber = $saving ? $saving->saving_wallet_code : null;
@@ -162,7 +175,20 @@ class CustomerController extends Controller
             )
             ->where('users.phone', $phoneNumber)
             ->where('wallets.wallet_type', 'Current')
-            ->groupBy('users.id', 'wallets.wallet_type')
+            ->groupBy(
+                'users.id',
+                'users.name',
+                'users.firstname',
+                'users.created_at',
+                'users.phone',
+                'users.address',
+                'users.avatar',
+                'users.country',
+                'users.email',
+                'users.role_name',
+                'users.city',
+                'wallets.wallet_type'
+            )
             ->first();
            
         $transactions = [];
